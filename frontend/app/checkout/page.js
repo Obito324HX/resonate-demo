@@ -1,11 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { api } from "@/lib/api";
 
 export default function CheckoutPage() {
+  return (
+    <Suspense fallback={null}>
+      <CheckoutForm />
+    </Suspense>
+  );
+}
+
+function CheckoutForm() {
   const { items, totalCents } = useCart();
   const searchParams = useSearchParams();
   const [form, setForm] = useState({ customerName: "", customerEmail: "", address: "" });
