@@ -25,6 +25,16 @@ export const api = {
   getCategories: () => request(`/products/categories/all`),
   placeOrder: (data) => request(`/orders`, { method: "POST", body: JSON.stringify(data) }),
   getOrder: (id) => request(`/orders/${id}`),
+  trackOrder: (orderId, email) =>
+    request(`/orders/track`, { method: "POST", body: JSON.stringify({ orderId, email }) }),
+
+  // Stripe test-mode checkout
+  createCheckoutSession: (data) =>
+    request(`/checkout/create-session`, { method: "POST", body: JSON.stringify(data) }),
+  verifyCheckoutSession: (sessionId) =>
+    request(`/checkout/verify-session?session_id=${encodeURIComponent(sessionId)}`),
+  cancelCheckoutOrder: (orderId) =>
+    request(`/checkout/cancel/${orderId}`, { method: "POST" }),
 
   // Admin
   login: (email, password) =>

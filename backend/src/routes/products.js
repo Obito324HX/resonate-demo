@@ -7,7 +7,7 @@ const router = express.Router();
 // GET /api/products
 // Supports optional query params: ?category=slug&search=text&featured=true
 router.get("/", async (req, res) => {
-  const { category, search, featured } = req.query;
+  const { category, search, featured, sort } = req.query;
 
   const where = {};
 
@@ -26,11 +26,19 @@ router.get("/", async (req, res) => {
     ];
   }
 
+  const sortMap = {
+    newest: { createdAt: "desc" },
+    price_asc: { price: "asc" },
+    price_desc: { price: "desc" },
+    name_asc: { name: "asc" },
+  };
+  const orderBy = sortMap[sort] || sortMap.newest;
+
   try {
     const products = await prisma.product.findMany({
       where,
       include: { category: true },
-      orderBy: { createdAt: "desc" },
+      orderBy,
     });
     res.json(products);
   } catch (err) {

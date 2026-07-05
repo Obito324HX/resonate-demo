@@ -41,14 +41,15 @@ model Product {
 }
 
 model Order {
-  id          String      @id @default(cuid())
-  customerName  String
-  customerEmail String
-  address     String
-  status      OrderStatus @default(PENDING)
-  totalCents  Int
-  items       OrderItem[]
-  createdAt   DateTime    @default(now())
+  id              String      @id @default(cuid())
+  customerName    String
+  customerEmail   String
+  address         String
+  status          OrderStatus @default(PENDING)
+  totalCents      Int
+  stripeSessionId String?     @unique
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
 }
 
 model OrderItem {

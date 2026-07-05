@@ -66,6 +66,8 @@ router.post("/", async (req, res) => {
 });
 
 // GET /api/orders/:id  (order confirmation lookup — public)
+// Used right after checkout, when the order ID alone is enough (it's
+// unguessable and was just given to this browser).
 router.get("/:id", async (req, res) => {
   try {
     const order = await prisma.order.findUnique({
@@ -75,6 +77,33 @@ router.get("/:id", async (req, res) => {
 
     if (!order) {
       return res.status(404).json({ error: "Order not found" });
+    }
+
+    res.json(order);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch order" });
+  }
+});
+
+// POST /api/orders/track  (order tracking lookup — public)
+// Requires both order ID and the email used at checkout, so a customer
+// can't look up someone else's order just by guessing an ID.
+router.post("/track", async (req, res) => {
+  const { orderId, email } = req.body;
+
+  if (!orderId || !email) {
+    return res.status(400).json({ error: "Order ID and email are required" });
+  }
+
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: { items: { include: { product: true } } },
+    });
+
+    if (!order || order.customerEmail.toLowerCase() !== email.toLowerCase()) {
+      return res.status(404).json({ error: "No matching order found" });
     }
 
     res.json(order);

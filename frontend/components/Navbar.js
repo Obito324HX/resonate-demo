@@ -12,6 +12,7 @@ export default function Navbar() {
     { href: "/?category=headphones", label: "Headphones" },
     { href: "/?category=earbuds", label: "Earbuds" },
     { href: "/?category=speakers", label: "Speakers" },
+    { href: "/track", label: "Track order" },
   ];
 
   return (
@@ -25,6 +26,7 @@ export default function Navbar() {
           Resonate
         </Link>
 
+        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-8 text-sm">
           {links.map((link) => (
             <Link key={link.href} href={link.href} className="hover:text-accent transition-colors">
@@ -41,6 +43,7 @@ export default function Navbar() {
           </Link>
         </nav>
 
+        {/* Mobile controls: cart + hamburger */}
         <div className="flex items-center gap-4 md:hidden">
           <Link href="/cart" className="relative" onClick={() => setMenuOpen(false)}>
             Cart
@@ -66,6 +69,7 @@ export default function Navbar() {
         </div>
       </div>
 
+      {/* Mobile dropdown menu */}
       {menuOpen && (
         <nav className="md:hidden border-t border-black/10 bg-paper px-6 py-4 flex flex-col gap-4 text-sm">
           {links.map((link) => (

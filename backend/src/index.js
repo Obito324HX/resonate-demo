@@ -5,6 +5,7 @@ const cors = require("cors");
 const productRoutes = require("./routes/products");
 const orderRoutes = require("./routes/orders");
 const authRoutes = require("./routes/auth");
+const checkoutRoutes = require("./routes/checkout");
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.get("/", (req, res) => {
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/checkout", checkoutRoutes);
 
 // Fallback error handler
 app.use((err, req, res, next) => {

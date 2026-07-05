@@ -1,16 +1,27 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { api } from "@/lib/api";
 
 export default function CheckoutPage() {
-  const { items, totalCents, clearCart } = useCart();
-  const router = useRouter();
+  const { items, totalCents } = useCart();
+  const searchParams = useSearchParams();
   const [form, setForm] = useState({ customerName: "", customerEmail: "", address: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [cancelledNotice, setCancelledNotice] = useState(false);
+
+  // If Stripe redirected back here after a cancelled payment, restore the
+  // stock that was provisionally reserved and let the customer know.
+  useEffect(() => {
+    const cancelled = searchParams.get("cancelled");
+    const orderId = searchParams.get("orderId");
+    if (cancelled && orderId) {
+      api.cancelCheckoutOrder(orderId).finally(() => setCancelledNotice(true));
+    }
+  }, [searchParams]);
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -22,30 +33,39 @@ export default function CheckoutPage() {
     setError(null);
 
     try {
-      const order = await api.placeOrder({
+      const { url } = await api.createCheckoutSession({
         ...form,
         items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
       });
-      clearCart();
-      router.push(`/order/${order.id}`);
+      // Redirect to Stripe's hosted, test-mode payment page.
+      window.location.href = url;
     } catch (err) {
       setError(err.message);
-    } finally {
       setLoading(false);
     }
   }
 
-  if (items.length === 0) {
+  if (items.length === 0 && !cancelledNotice) {
     return <p className="text-center text-muted py-24">Your cart is empty.</p>;
   }
 
   return (
     <div className="max-w-md mx-auto">
       <h1 className="font-display text-3xl mb-2">Checkout</h1>
-      <p className="text-muted text-sm mb-8">
-        This is a demo store — no real payment is collected. Placing an order will save it to
-        the database as it would in a live store.
+      <p className="text-muted text-sm mb-2">
+        This is a demo store using Stripe&apos;s test mode — you&apos;ll be taken to a real
+        Stripe payment page, but no real card or money is involved.
       </p>
+      <p className="text-muted text-xs mb-8">
+        Use test card <span className="font-mono">4242 4242 4242 4242</span>, any future
+        expiry date, any 3-digit CVC, and any postal code.
+      </p>
+
+      {cancelledNotice && (
+        <p className="text-sm bg-black/5 rounded-lg px-4 py-3 mb-6">
+          Checkout was cancelled — your cart has been restored, nothing was charged.
+        </p>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -89,7 +109,7 @@ export default function CheckoutPage() {
         {error && <p className="text-red-600 text-sm">{error}</p>}
 
         <button type="submit" disabled={loading} className="btn-primary w-full text-center">
-          {loading ? "Placing order..." : "Place order"}
+          {loading ? "Redirecting to payment..." : "Pay with Stripe (test mode)"}
         </button>
       </form>
     </div>

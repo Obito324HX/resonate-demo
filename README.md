@@ -89,6 +89,33 @@ You likely already have this from local setup. Just make sure the same
 
 Your storefront will be live at something like `https://resonate-demo.vercel.app`.
 
+## 6. Set up Stripe (test mode)
+
+Checkout now redirects to a real Stripe payment page, running entirely in Stripe's
+free test mode — no real card or money is ever involved.
+
+1. Create a free account at https://dashboard.stripe.com/register
+2. Make sure you're in **Test mode** (toggle top-right of the dashboard)
+3. Go to https://dashboard.stripe.com/test/apikeys and copy the **Secret key** (starts with `sk_test_`)
+4. Add it to your backend `.env` locally:
+   ```
+   STRIPE_SECRET_KEY="sk_test_..."
+   FRONTEND_URL="http://localhost:3000"
+   ```
+5. Add the same two variables to your **Render** service's environment variables —
+   for `FRONTEND_URL`, use your real deployed Vercel URL (e.g.
+   `https://resonate-demo-six.vercel.app`), not localhost.
+6. Since the `Order` model changed (added `stripeSessionId`), run a new migration:
+   ```bash
+   cd backend
+   npx prisma migrate dev --name add_stripe_session
+   ```
+   Then on Render, in the Shell tab: `npx prisma migrate deploy`
+
+**Test card for checkout:** `4242 4242 4242 4242`, any future expiry date, any
+3-digit CVC, any postal code. Stripe's test mode has other card numbers for
+simulating declines, 3D Secure, etc. — see https://stripe.com/docs/testing.
+
 ## Notes for portfolio use
 
 - Checkout is a **mock checkout** — no real payment processor is wired in. It still writes
