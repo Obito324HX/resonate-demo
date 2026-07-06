@@ -1,6 +1,3 @@
-// Prisma schema for Resonate e-commerce backend
-// DB: PostgreSQL (Neon)
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -29,15 +26,15 @@ model Product {
   name        String
   slug        String      @unique
   description String
-  price       Int         // stored in cents to avoid float rounding issues
+  price       Int
   imageUrl    String
   stock       Int         @default(0)
   featured    Boolean     @default(false)
   categoryId  String
-  category    Category    @relation(fields: [categoryId], references: [id])
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   orderItems  OrderItem[]
+  category    Category    @relation(fields: [categoryId], references: [id])
 }
 
 model Order {
@@ -47,19 +44,19 @@ model Order {
   address         String
   status          OrderStatus @default(PENDING)
   totalCents      Int
+  createdAt       DateTime    @default(now())
   stripeSessionId String?     @unique
   items           OrderItem[]
-  createdAt       DateTime    @default(now())
 }
 
 model OrderItem {
   id         String  @id @default(cuid())
   orderId    String
-  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId  String
-  product    Product @relation(fields: [productId], references: [id])
   quantity   Int
-  priceCents Int     // price at time of purchase
+  priceCents Int
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product    Product @relation(fields: [productId], references: [id])
 }
 
 enum OrderStatus {
