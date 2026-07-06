@@ -52,9 +52,6 @@ export default function AdminLoginPage() {
           {loading ? "Signing in..." : "Sign in"}
         </button>
       </form>
-      <p className="text-xs text-muted text-center mt-6">
-        Demo credentials: admin@resonate.dev / changeme123
-      </p>
     </div>
   );
 }
